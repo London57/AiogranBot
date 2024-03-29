@@ -2,23 +2,28 @@ from aiogram import Bot, Dispatcher, types
 import asyncio
 from aiogram.filters import CommandStart
 
-bot = Bot(token='6903256584:AAH_B-UtzEiQ0y0RJ1scJ9_pNOpz_tbL4Ys')
+from dotenv import load_dotenv, find_dotenv
+import os
+load_dotenv(find_dotenv())
+
+from handlers.user_private import user_private_router
+from handlers.user_group import user_groups_router
+from commands.bot_cmnds_list import private
+
+ALLOWED_UPDATES = ['message', 'edited_message']
+bot = Bot(token=os.getenv('TOKEN'))
 
 dp = Dispatcher()
+dp.include_routers(user_private_router, user_groups_router)
 
 
-@dp.message(CommandStart())
-async def start(message: types.Message):
-    await message.answer('Введите свой тег')
-
-@dp.message()
-async def stst(message: types.Message, bot: Bot):
-    await bot.send_message(message.chat.id, )
 
 
 
 async def main():
-    await dp.start_polling(bot)
+    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.set_my_commands(commands=private, scope=types.BotCommandScopeAllPrivateChats())
+    await dp.start_polling(bot, allowed_updates=ALLOWED_UPDATES)
 
 
 asyncio.run(main())
